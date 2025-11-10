@@ -1,14 +1,36 @@
-name: CI sanity check
+name: Daily Digest (python)
 
 on:
-  workflow_dispatch: {}
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC daily - change if you want a different time
+  workflow_dispatch: {}   # allow manual runs
 
 jobs:
-  test:
+  digest:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Echo success
-        run: echo "Actions YAML parse OK"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run digest script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -f src/tools/run_digest.py ]; then
+            python src/tools/run_digest.py
+          else
+            echo "No src/tools/run_digest.py found"
+            exit 1
+          fi
