@@ -2,8 +2,13 @@ name: Daily Digest (python)
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC daily - change if you want a different time
-  workflow_dispatch: {}   # allow manual runs
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+# Give the GITHUB_TOKEN the permissions it needs
+permissions:
+  contents: read
+  issues: read
 
 jobs:
   digest:
